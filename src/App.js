@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "React";
+// import "./App.scss";  className="toolbar"
 import style from "./style/index.scss";
 import { DRAW_TYPE } from './canvas/util';
 

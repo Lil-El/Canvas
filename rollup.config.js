@@ -5,6 +5,7 @@ import babel from "@rollup/plugin-babel"
 import replace from "@rollup/plugin-replace"
 import postcss from 'rollup-plugin-postcss'
 import commonjs from "@rollup/plugin-commonjs"
+import autoprefixer from 'autoprefixer';
 
 const mode = process.env.NODE_ENV;
 const isWatch = process.env.ROLLUP_WATCH;
@@ -18,6 +19,7 @@ const isProd = mode === "production";
 // })
 
 export default {
+    // preserveModules: true, 保持目录
     input: "src/main.js",
     output: { // 配置成数组可以输出多个
         file: "dist/index.js",
@@ -42,6 +44,7 @@ export default {
         }),
         commonjs(),
         postcss({
+            plugins: [autoprefixer()],
             // Extract CSS to the same location where JS file is generated but with .css extension.
             extract: true,
             // Use named exports alongside default export.
