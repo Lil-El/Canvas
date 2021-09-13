@@ -1,0 +1,13 @@
+.toolbar {
+  display: flex;
+}
+
+.toolbar__draw {
+  margin-right: 20px;
+}
+
+.canvas {
+  width: 400px;
+  height: 260px;
+  border: 1px solid black;
+}
