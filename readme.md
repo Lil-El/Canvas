@@ -2,13 +2,14 @@
 
 - This repository leverages rollup to package dependency.
 
-## Config
+## Rollup Config
 ---------
 - use `yarn` add `canvas` `rollup` `react` package
 
-### [rollup配置react的问题](https://zhuanlan.zhihu.com/p/158923027)
-
+[rollup 源码博客](https://www.cnblogs.com/xiaoyuxy/p/12574632.html)
+[rollup配置react的问题](https://zhuanlan.zhihu.com/p/158923027)
 [参考](http://www.geekschool.org/2020/07/09/6309.html)
+[rollup react组件库配置](https://www.it610.com/article/1297425445276426240.htm)
 
 #### 打包时：
 
@@ -19,6 +20,7 @@
 - class组件中的修饰符@打包报错，引入`@babel/plugin-proposal-decorators`解决，`.babelrc 顺序必须在class-properties前`
 - 代码中使用的新特性解析报错，引入`@babel/preset-env`解决
 - 使用rollup-plugin-less/rollup-plugin-less-modules打包出来引入的CSS文件不对，替换成rollup-plugin-postcss/rollup-plugin-less
+- Css Module使用插件 rollup-plugin-postcss-modules
 
 #### 运行时：
 
@@ -30,7 +32,7 @@
 ```js config
 import commonjs from "rollup-plugin-commonjs";
 import babel from "rollup-plugin-babel";
-import postcss from "rollup-plugin-postcss";
+import postcss from "rollup-plugin-postcss-modules";
 import ascii from "rollup-plugin-ascii";
 import resolve from "@rollup/plugin-node-resolve";
 import includePaths from "rollup-plugin-includepaths";
@@ -72,15 +74,10 @@ export default {
     commonjs(),
     ascii(),
     postcss({
-      // Extract CSS to the same location where JS file is generated but with .css extension.
       extract: true,
-      // Use named exports alongside default export.
       namedExports: true,
-      // Minimize CSS, boolean or options for cssnano.
       minimize: true,
-      // Enable sourceMap.
       sourceMap: true,
-      // This plugin will process files ending with these extensions and the extensions supported by custom loaders.
       extensions: [".less", ".css"],
     }),
     terser(),
@@ -129,3 +126,20 @@ export default {
   ]
 }
 ```
+
+## Babel Config
+---------
+
+[参考](https://www.cnblogs.com/bai1218/p/12392180.html)
+
+```json .babelrc
+{
+    "presets": [
+      "@babel/preset-env", 
+      "@babel/preset-react"
+    ],
+    "plugins": ["transform-class-properties"]
+}
+
+```
+

@@ -1,6 +1,24 @@
+.flex {
+    display: flex;
+}
+.flex-column {
+    display: flex;
+    flex-direction: column;
+}
+.flex-justify-center {
+    justify-content: center;
+}
+.flex-align-center {
+    align-items: center;
+}
+.flex-inline-item {
+    @extend .flex, .flex-align-center, .flex-justify-center
+}
+
 .toolbar{
     display: flex;
-    &__draw{
+    margin-bottom: 30px;
+    &__draw > button{
         margin-right: 20px;
     }
 }

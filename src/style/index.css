@@ -1,8 +1,26 @@
-.toolbar {
+.flex, .flex-inline-item {
   display: flex;
 }
 
-.toolbar__draw {
+.flex-column {
+  display: flex;
+  flex-direction: column;
+}
+
+.flex-justify-center, .flex-inline-item {
+  justify-content: center;
+}
+
+.flex-align-center, .flex-inline-item {
+  align-items: center;
+}
+
+.toolbar {
+  display: flex;
+  margin-bottom: 30px;
+}
+
+.toolbar__draw > button {
   margin-right: 20px;
 }
 

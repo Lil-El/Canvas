@@ -3,9 +3,11 @@ import liveServer from "rollup-plugin-live-server"
 import resolve from '@rollup/plugin-node-resolve'
 import babel from "@rollup/plugin-babel"
 import replace from "@rollup/plugin-replace"
-import postcss from 'rollup-plugin-postcss'
+import postcss from 'rollup-plugin-postcss' // rollup-plugin-postcss-module 支持css module
 import commonjs from "@rollup/plugin-commonjs"
-import autoprefixer from 'autoprefixer';
+import liveReload from "rollup-plugin-livereload"
+import json from "@rollup/plugin-json"
+// import autoprefixer from 'autoprefixer';
 
 const mode = process.env.NODE_ENV;
 const isWatch = process.env.ROLLUP_WATCH;
@@ -19,6 +21,7 @@ const isProd = mode === "production";
 // })
 
 export default {
+    // experimentalCodeSplitting: true, 代码分割，需要配置output.dir不是.file
     // preserveModules: true, 保持目录
     input: "src/main.js",
     output: { // 配置成数组可以输出多个
@@ -42,20 +45,12 @@ export default {
         babel({ // 先babel、后common
             // exclude: "**/node_modules/**"
         }),
+        resolve(),
+        json(),
         commonjs(),
         postcss({
-            plugins: [autoprefixer()],
-            // Extract CSS to the same location where JS file is generated but with .css extension.
-            extract: true,
-            // Use named exports alongside default export.
-            namedExports: true,
-            // Minimize CSS, boolean or options for cssnano.
-            minimize: true,
-            // Enable sourceMap.
-            sourceMap: true,
-            // This plugin will process files ending with these extensions and the extensions supported by custom loaders.
-            extensions: [".scss", ".css"],
-          }),
+            modules: true // css module；
+        }),
         isWatch && liveServer({
             port: "8080",
             root: ".",
@@ -71,6 +66,8 @@ export default {
                 warnings    : false
             }
         }),
-        resolve()
+        liveReload({
+            watch: 'dist'
+        })
     ]
 }
