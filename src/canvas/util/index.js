@@ -1,8 +1,13 @@
 
-export const DRAW_TYPE = {
+export const SYMBOL = {
     LINE: "line",
     CIRCLE: "circle",
     RECTANGLE: "rectangle",
     POLYGON: "polygon",
-    NONE: "none",
 };
+
+export const MODE = {
+    DRAW: "DRAW",
+    EDIT: "EDIT",
+    NONE: "NONE",
+}
