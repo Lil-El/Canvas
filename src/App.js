@@ -2,12 +2,15 @@ import React, { useEffect, useMemo, useState } from "React";
 import "./App.css"; //  className="toolbar"
 import style from "./style/index.scss";
 import { SYMBOL, MODE } from './canvas/util';
+import { useObjSize } from './hooks'
 
 export default function App() {
     // PS: let canvas 定义的对象；在useEffect可能无法获取到
-
     const [ curMode, setModeType ] = useState(MODE.NONE);
     const [ canvas, setCanvas ] = useState(null);
+
+    // let [ current, setCurrent ] = useState(null);
+    const [ current, size ] = useObjSize(canvas);
 
     const addSymbol = (type)=>{
         switch(type){
@@ -17,13 +20,15 @@ export default function App() {
                 canvas.add(path);
                 break;
             case SYMBOL.RECTANGLE:
-                let rect = new fabric.Rect({  
+                let rect = new fabric.Rect({
                     left: 200, 
-                    top: 200, 
+                    top: 200,
                     fill: "green",
                     width: 200,
                     height: 200,
+                    id: Date.now()
                 });
+                // setCurrent(rect)
                 canvas.add(rect);
                 break;
             default:
@@ -32,10 +37,6 @@ export default function App() {
     }
     const toggleMode = (mode) => {
         if(mode in MODE) setModeType(mode);
-        // canvas.on('mouse:down', function(options) {
-        //     console.log(options);
-        //     console.log(options.e.clientX, options.e.clientY)
-        // })
     }
     useEffect(()=>{
         setCanvas(new fabric.Canvas("canvas"))
@@ -47,26 +48,25 @@ export default function App() {
 
     useEffect(()=>{
         let startX, startY = 0;
-        let endX, endY = 0;
 
         switch(curMode){
             case MODE.DRAW:
                 let drawing = null;
                 let rect = new fabric.Rect({
+                    id: Date.now(),
                     left: 100,
                     top: 100,
                     fill: "green",
                     width: 10,
                     height: 10,
                 })
+                // setCurrent(rect);
                 canvas.add(rect);
                 canvas.on('mouse:down', function(options) {
                     drawing = true;
                     const {x, y} = options.pointer;
                     [rect.left, rect.top] = [startX, startY] = [x, y];
                     canvas.renderAll();
-                    console.log(rect.aCoords);
-                    // rect.setCoords();
                 })
                 canvas.on('mouse:move', function(options) {
                     if(drawing != true) return void 0;
@@ -103,6 +103,7 @@ export default function App() {
                         <button onClick={() => toggleMode(MODE.EDIT)}>Edit</button>
                     </div>
                 </div>
+                <div>{size && `${size.width}, ${size.height}`}</div>
                 <canvas id="canvas" width="500" height="400" className={style.canvas}></canvas>
             </div>
         </div>
