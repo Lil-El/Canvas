@@ -4,6 +4,8 @@ import style from "./style/index.scss";
 import { SYMBOL, MODE } from './canvas/util';
 import { useObjSize, useDrawing } from './hooks'
 
+// TODO: 模拟眼动仪在页面的屏幕坐标，获取对应点位下的符号
+
 export default function App() {
     // PS: let canvas 定义的对象；在useEffect可能无法获取到
     const [ curMode, setModeType ] = useState(MODE.NONE);
