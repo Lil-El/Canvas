@@ -49,6 +49,8 @@ export default function App() {
     useEffect(()=>{
         canvas && (canvas.selection = false);
         // TODO: 判断点位是否在范围内？
+        // 1. 判断与点的距离是否小于阈值
+        // 2. 大于：判断垂线的距离 && 判断垂点位置是否在两点之间
         // 文字是否Dom还是canvas展示？如何设置文字展示锚点位置？
         canvas?.on("mouse:down", (ev)=>{ // 模拟眼动仪的事件
             let {left, top, width, height, target, } = ev;
