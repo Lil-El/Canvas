@@ -4,8 +4,6 @@ import style from "./style/index.scss";
 import { SYMBOL, MODE } from './canvas/util';
 import { useObjSize, useDrawing } from './hooks'
 
-// TODO: 模拟眼动仪在页面的屏幕坐标，获取对应点位下的符号
-
 export default function App() {
     // PS: let canvas 定义的对象；在useEffect可能无法获取到
     const [ curMode, setModeType ] = useState(MODE.NONE);
@@ -27,8 +25,12 @@ export default function App() {
                     fill: "green",
                     width: 200,
                     height: 200,
-                    id: Date.now()
+                    id: Date.now(),
+                    name: "这是一个气泡标题"
                 });
+                rect.on("play", ()=>{
+                    console.log('play');
+                })
                 // setCurrent(rect)
                 canvas.add(rect);
                 break;
@@ -40,11 +42,15 @@ export default function App() {
         if(mode in MODE) setModeType(mode);
     }
     useEffect(()=>{
-        setCanvas(new fabric.Canvas("canvas"))
+        setCanvas(new fabric.Canvas("canvas"));
+        
     }, [])
     
     useEffect(()=>{
         canvas && (canvas.selection = false);
+        canvas?.on("mouse:down", (ev)=>{
+            console.log(ev);
+        })
     }, [canvas])
 
     useEffect(()=>{
@@ -60,11 +66,21 @@ export default function App() {
                 }))
                 break;
             default: 
+            
+            
                 endDrawing();
                 break;
         }
-    }, [curMode])
+    }, [canvas, curMode])
 
+    let getAll = ()=>{
+        console.log('getAll');
+        canvas?.forEachObject((shape, index, all)=>{
+            shape.fire("play")
+        }, canvas);
+        // let element = document.elementFromPoint(700, 400);
+        // console.log(element)
+    }
     return (
         <div className={`${style["flex-inline-item"]}`}>
             <div className={`${style["flex"]} ${style["flex-column"]}`}>
@@ -78,6 +94,11 @@ export default function App() {
                     <div className={style.toolbar__draw}>
                         <button onClick={() => toggleMode(MODE.DRAW)}>Draw</button>
                         <button onClick={() => toggleMode(MODE.EDIT)}>Edit</button>
+                    </div>
+                </div>
+                <div className={style.toolbar}>
+                    <div className={style.toolbar__draw}>
+                        <button onClick={getAll}>getAll</button>
                     </div>
                 </div>
                 <div>{size && `${size.width}, ${size.height}`}</div>
