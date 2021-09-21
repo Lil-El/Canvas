@@ -48,7 +48,10 @@ export default function App() {
     
     useEffect(()=>{
         canvas && (canvas.selection = false);
-        canvas?.on("mouse:down", (ev)=>{
+        // TODO: 判断点位是否在范围内？
+        // 文字是否Dom还是canvas展示？如何设置文字展示锚点位置？
+        canvas?.on("mouse:down", (ev)=>{ // 模拟眼动仪的事件
+            let {left, top, width, height, target, } = ev;
             console.log(ev);
         })
     }, [canvas])
