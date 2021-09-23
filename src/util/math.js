@@ -29,7 +29,7 @@ export function areaOfTriangle(pointA, pointB, pointC) {
     let A = distance(pointA, pointB);
     let B = distance(pointB, pointC);
     let C = distance(pointC, pointA);
-    let P = Math.round((lineA + lineB + lineC) / 2);
+    let P = Math.round((A + B + C) / 2);
     return Math.round(Math.sqrt(P * (P - A) * (P - B) * (P - C)))
 }
 

@@ -89,6 +89,7 @@ export default function App() {
                 let {x, y} = ev.pointer;
                 const {tl, tr, br, bl} = objects.oCoords;
                 // offsetValue = 10px;
+                // 1. 先判断触发点与顶点的距离
                 let allDistance = [distance({x, y}, {x: tl.x, y: tl.y}), distance({x, y}, {x: tr.x, y: tr.y}), distance({x, y}, {x: bl.x, y: bl.y}), distance({x, y}, {x: br.x, y: br.y})]
                 console.log(allDistance);
                 for(let i = 0; i< allDistance.length; i++) {
@@ -98,8 +99,8 @@ export default function App() {
                     }
                 }
                 // true : 位置 <= 10 ；再判断是否在线上 
-                
-                let allVDistance = [verticalDistance({x, y}, {x: tl.x, y: tl.y}), verticalDistance({x, y}, {x: tr.x, y: tr.y}), verticalDistance({x, y}, {x: bl.x, y: bl.y}), verticalDistance({x, y}, {x: br.x, y: br.y})]
+                // 2. 判断触发点与各个边的垂直距离
+                let allVDistance = [verticalDistance({x, y}, {x: tl.x, y: tl.y}, {x: tr.x, y: tr.y}), verticalDistance({x, y}, {x: tr.x, y: tr.y}, {x: br.x, y: br.y}), verticalDistance({x, y}, {x: br.x, y: br.y}, {x: bl.x, y: bl.y}), verticalDistance({x, y}, {x: br.x, y: br.y}, {x: tl.x, y: tl.y})]
                 console.log(allVDistance);
                 for(let i = 0; i< allVDistance.length; i++) {
                     let curDistance = allVDistance[i];
