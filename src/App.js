@@ -3,20 +3,36 @@ import "./App.css"; //  className="toolbar"
 import style from "./style/index.scss";
 import { SYMBOL, MODE } from './canvas/util';
 import { useObjSize, useDrawing } from './hooks'
+import useRange from "./hooks/useRange";
 
+// TODO: 文字是否Dom还是canvas展示？如何设置文字展示锚点位置？
 export default function App() {
     // PS: let canvas 定义的对象；在useEffect可能无法获取到
     const [ curMode, setModeType ] = useState(MODE.NONE);
     const [ canvas, setCanvas ] = useState(null);
     const [ current, size ] = useObjSize(canvas);
     const [ startDrawing, endDrawing ] = useDrawing(canvas);
+    const [ isRange, setRangeStatus ] = useRange(canvas);
 
     const addSymbol = (type)=>{
         switch(type){
             case SYMBOL.POLYGON:
-                var path = new fabric.Path('M 0 0 L 200 100 L 170 200 z');
-                path.set({ left: 120, top: 120,fill:'red' });
-                canvas.add(path);
+                // let path = new fabric.Path('M 0 0 L 200 100 L 170 200 z');
+                // path.set({ left: 120, top: 120,fill:'red' });
+                // canvas.add(path);
+                let polygon = new fabric.Polygon([
+                    {x: 0, y: 0},
+                    {x: 100, y: 20},
+                    {x: 150, y: 140},
+                    {x: 200, y: 120}
+                ], {
+                    left: 0, 
+                    top: 0,
+                    fill:'red',
+                    width: 100,
+                    height: 100
+                });
+                canvas.add(polygon);
                 break;
             case SYMBOL.RECTANGLE:
                 let rect = new fabric.Rect({
@@ -34,6 +50,18 @@ export default function App() {
                 // setCurrent(rect)
                 canvas.add(rect);
                 break;
+            case SYMBOL.CIRCLE:
+                let circle = new fabric.Circle({
+                    left: 100, 
+                    top: 100,
+                    fill: "green",
+                    // backgroundColor: "red",
+                    radius: 100,
+                    id: Date.now(),
+                    name: "这是一个气泡标题"
+                })
+                canvas.add(circle);
+                break;
             default:
                 break;
         }
@@ -48,14 +76,6 @@ export default function App() {
     
     useEffect(()=>{
         canvas && (canvas.selection = false);
-        // TODO: 判断点位是否在范围内？
-        // 1. 判断与点的距离是否小于阈值
-        // 2. 大于：判断垂线的距离 && 判断垂点位置是否在两点之间
-        // 文字是否Dom还是canvas展示？如何设置文字展示锚点位置？
-        canvas?.on("mouse:down", (ev)=>{ // 模拟眼动仪的事件
-            let {left, top, width, height, target, } = ev;
-            console.log(ev);
-        })
     }, [canvas])
 
     useEffect(()=>{
@@ -71,8 +91,6 @@ export default function App() {
                 }))
                 break;
             default: 
-            
-            
                 endDrawing();
                 break;
         }
@@ -80,12 +98,10 @@ export default function App() {
 
     let getAll = ()=>{
         console.log('getAll');
-        canvas?.forEachObject((shape, index, all)=>{
-            shape.fire("play")
-        }, canvas);
         // let element = document.elementFromPoint(700, 400);
         // console.log(element)
     }
+    
     return (
         <div className={`${style["flex-inline-item"]}`}>
             <div className={`${style["flex"]} ${style["flex-column"]}`}>
@@ -99,6 +115,8 @@ export default function App() {
                     <div className={style.toolbar__draw}>
                         <button onClick={() => toggleMode(MODE.DRAW)}>Draw</button>
                         <button onClick={() => toggleMode(MODE.EDIT)}>Edit</button>
+                        <button onClick={() => setRangeStatus(true)}>Start Machine</button>
+                        <button onClick={() => setRangeStatus(false)}>Close Machine</button>
                     </div>
                 </div>
                 <div className={style.toolbar}>
