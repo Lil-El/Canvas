@@ -4,6 +4,7 @@ export const SYMBOL = {
     CIRCLE: "circle",
     RECTANGLE: "rectangle",
     POLYGON: "polygon",
+    POLYLINE: "polyline"
 };
 
 export const MODE = {

@@ -2,8 +2,8 @@ import React, { useEffect, useMemo, useState } from "React";
 import "./App.css"; //  className="toolbar"
 import style from "./style/index.scss";
 import { SYMBOL, MODE } from './canvas/util';
-import { useObjSize, useDrawing } from './hooks'
-import useRange from "./hooks/useRange";
+import { useObjSize, useDrawing } from './canvas/Draw'
+import useRange from "./canvas/Range/useRange";
 
 // TODO: 文字是否Dom还是canvas展示？如何设置文字展示锚点位置？
 export default function App() {
@@ -16,15 +16,24 @@ export default function App() {
 
     const addSymbol = (type)=>{
         switch(type){
+            case SYMBOL.LINE:
+                let line = new fabric.Line([0, 0, 200, 200], {
+                    id: Date.now(),
+                    left: 100,
+                    top: 100,
+                    stroke: "blue",
+                    strokeWidth: 3
+                });
+                canvas.add(line)
             case SYMBOL.POLYGON:
                 // let path = new fabric.Path('M 0 0 L 200 100 L 170 200 z');
                 // path.set({ left: 120, top: 120,fill:'red' });
                 // canvas.add(path);
-                let polygon = new fabric.Polygon([
+                let polygon = new fabric.Polyline([
                     {x: 0, y: 0},
                     {x: 100, y: 20},
-                    {x: 150, y: 140},
-                    {x: 200, y: 120}
+                    // {x: 150, y: 140},
+                    // {x: 200, y: 120}
                 ], {
                     left: 0, 
                     top: 0,
@@ -54,40 +63,58 @@ export default function App() {
                 let circle = new fabric.Circle({
                     left: 100, 
                     top: 100,
-                    fill: "green",
-                    // backgroundColor: "red",
+                    fill: "red",
                     radius: 100,
                     id: Date.now(),
                     name: "这是一个气泡标题"
                 })
                 canvas.add(circle);
                 break;
+            case SYMBOL.POLYLINE:
+                let polyline = new fabric.Polyline([
+                    {x: 0, y: 0},
+                    {x: 0, y: 150},
+                    {x: 150, y: 150},
+                    {x: 150, y: 230}
+                ],{
+                    left: 100,
+                    top: 100,
+                    fill: "transparent",
+                    stroke: "red",
+                    strokeWidth: 3,
+                    id: Date.now(),
+                    name: "这是一个气泡标题"
+                })
+                canvas.add(polyline);
+                break;
             default:
                 break;
         }
     }
-    const toggleMode = (mode) => {
-        if(mode in MODE) setModeType(mode);
+    const toggleMode = (mode, shape) => {
+        if(mode in MODE) setModeType(`${mode}_${shape}`);
     }
     useEffect(()=>{
         setCanvas(new fabric.Canvas("canvas"));
-        
     }, [])
     
+    const drawing = (symbol)=>{
+        startDrawing(symbol)
+    }
+
     useEffect(()=>{
         canvas && (canvas.selection = false);
     }, [canvas])
 
     useEffect(()=>{
         switch(curMode){
-            case MODE.DRAW:
-                startDrawing(new fabric.Rect({
+            case `${MODE.DRAW}_${SYMBOL.POLYGON}`:
+                startDrawing(new fabric.Line([0, 0, 0, 0], {
                     id: Date.now(),
-                    left: 100,
-                    top: 100,
-                    fill: "green",
-                    width: 10,
-                    height: 10,
+                    left: 0,
+                    top: 0,
+                    stroke: "blue",
+                    strokeWidth: 3
                 }))
                 break;
             default: 
@@ -105,15 +132,17 @@ export default function App() {
     return (
         <div className={`${style["flex-inline-item"]}`}>
             <div className={`${style["flex"]} ${style["flex-column"]}`}>
-                <button onClick={() => addSymbol(SYMBOL.LINE)}>Draw Line</button>
-                <button onClick={() => addSymbol(SYMBOL.CIRCLE)}>Draw Circle</button>
-                <button onClick={() => addSymbol(SYMBOL.RECTANGLE)}>Draw Rect</button>
-                <button onClick={() => addSymbol(SYMBOL.POLYGON)}>Draw Polygon</button>
+                <button onClick={() => addSymbol(SYMBOL.LINE)}>Add Line</button>
+                <button onClick={() => addSymbol(SYMBOL.CIRCLE)}>Add Circle</button>
+                <button onClick={() => addSymbol(SYMBOL.RECTANGLE)}>Add Rect</button>
+                <button onClick={() => addSymbol(SYMBOL.POLYGON)}>Add Polygon</button>
+                <button onClick={() => addSymbol(SYMBOL.POLYLINE)}>Add Polyline</button>
             </div>
             <div className={`${style["flex-inline-item"]} ${style["flex-column"]}`}>
                 <div className={style.toolbar}>
                     <div className={style.toolbar__draw}>
-                        <button onClick={() => toggleMode(MODE.DRAW)}>Draw</button>
+                        <button onClick={() => drawing(SYMBOL.RECTANGLE)}>Draw Rect</button>
+                        <button onClick={() => drawing(SYMBOL.CIRCLE)}>Draw Circle</button>
                         <button onClick={() => toggleMode(MODE.EDIT)}>Edit</button>
                         <button onClick={() => setRangeStatus(true)}>Start Machine</button>
                         <button onClick={() => setRangeStatus(false)}>Close Machine</button>

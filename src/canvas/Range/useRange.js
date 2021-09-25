@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { getCoordOfVertical, distance, verticalDistance } from "../util/math"
+import { getCoordOfVertical, distance, verticalDistance } from "../../util/math"
 
 export default function (canvas) {
     const [status, setStatus] = useState(false)

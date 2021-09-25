@@ -1,5 +1,9 @@
+import { distance } from "../../util/math";
 import { useCallback, useEffect, useState, useRef } from "react";
-
+import { SYMBOL } from "../util/index"
+import { makeCircle } from "./Circle";
+import { makeRect } from "./Rectangle";
+import { e } from "mathjs";
 
 function handleSize(setState, obj){
     setState({
@@ -7,7 +11,6 @@ function handleSize(setState, obj){
         height: Math.round(obj.height * obj.scaleY)
     })
 }
-
 export function useObjSize(canvas){
     let [current, setCurrent] = useState(null);
     let [queue, setQueue] = useState([])
@@ -88,10 +91,10 @@ export function useObjSize(canvas){
 
 export function useDrawing(canvas){
     let [drawing, setStatus] = useState(false);
+    let [symbol, setSymbol] = useState(null);
     let [shape, setShape] = useState(null)
     let shapeRef = useRef()
     let [obj, setObj] = useState(null);
-    
 
     let onMouseMove = useCallback((options)=>{
         console.log('draw move:', drawing);
@@ -100,20 +103,34 @@ export function useDrawing(canvas){
         if(drawing){
             const {x, y} = options.pointer;
             // .set({})   .set("width", xxx)
-            shapeRef.current = {...shapeRef.current, width: Math.abs(x - shapeRef.current.left), height: Math.abs(y - shapeRef.current.top)}
+            if(symbol === SYMBOL.CIRCLE){
+                let radius = distance([shapeRef.current._centerX, shapeRef.current._centerY], [x, y]);
+                shapeRef.current = {
+                    ...shapeRef.current,
+                    left: shapeRef.current._centerX - radius,
+                    top: shapeRef.current._centerY - radius,
+                    radius
+                }
+            }else if(symbol === SYMBOL.RECTANGLE){ 
+                shapeRef.current = {...shapeRef.current, width: Math.abs(x - shapeRef.current.left), height: Math.abs(y - shapeRef.current.top)}
+            }
             setShape(shapeRef.current)
         }
-    }, [drawing])
+    }, [drawing, obj])
     let onMouseDown = useCallback((options)=>{
         console.log('draw down:', drawing);
-        if(drawing){
+        if(drawing && obj){
             canvas.add(obj);
             canvas.on("mouse:move", onMouseMove)
             const {x, y} = options.pointer;
-            shapeRef.current = {...shapeRef.current, top: y, left: x}
+            if(symbol === SYMBOL.CIRCLE) {
+                shapeRef.current = {...shapeRef.current, _centerY: y, _centerX: x, top: y, left: x}
+            }else if(symbol === SYMBOL.RECTANGLE){
+                shapeRef.current = {...shapeRef.current, top: y, left: x}
+            }
             setShape(shapeRef.current)
         }
-    }, [drawing])
+    }, [drawing, obj, symbol])
     let onMouseUp = useCallback(()=>{
         console.log('draw up:', drawing);
         if(drawing){
@@ -121,10 +138,27 @@ export function useDrawing(canvas){
             obj.setCoords();
             canvas.off("mouse:move", onMouseMove)
         }
-    }, [drawing])
+    }, [drawing, obj])
+
+    useEffect(()=>{
+        if(symbol){
+            let drawObj = null;
+            switch (symbol) {
+                case SYMBOL.RECTANGLE:
+                    drawObj = makeRect()
+                    break;
+                case SYMBOL.CIRCLE:
+                    drawObj = makeCircle()
+                    break;
+                default:
+                    break;
+            }
+            drawObj && setObj(drawObj);
+        }
+    }, [symbol])
 
     useEffect(() => {
-        if(canvas && drawing) {
+        if(canvas && drawing && obj) {
             shapeRef.current = {
                 width: 0,
                 height: 0,
@@ -139,7 +173,7 @@ export function useDrawing(canvas){
             canvas?.off("mouse:down", onMouseDown)
             canvas?.off("mouse:up", onMouseUp)
         }
-    }, [canvas, drawing])
+    }, [canvas, drawing, obj])
 
     useEffect(()=>{
         if(obj){
@@ -148,11 +182,17 @@ export function useDrawing(canvas){
         }
     }, [obj, shape])
 
-    return [(obj)=>{
-        setObj(obj);
+    return [(symbolType)=>{
+        setSymbol(symbolType)
         setStatus(true);
     }, ()=>{
-        setObj(null);
+        setSymbol(null);
         setStatus(false);
-    }] // startDrawing cancelDrawing
+    }]
 }
+
+export * from './Circle'
+export * from './Line'
+export * from './Polygon'
+export * from './Polyline'
+export * from './Rectangle'
