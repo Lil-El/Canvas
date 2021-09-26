@@ -105,6 +105,7 @@ export function useDrawing(canvas){
         pointsRef.current = linesRef.current = [];
         canvas.off("mouse:move", onMouseMove)
         let copyObj = makePolygon([...obj.get("points")]);
+        // TODO: polygon的编辑操作
         copyObj.on("mouse:dblclick", ()=>{
             console.log('dbclick');
         })
