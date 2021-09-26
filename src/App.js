@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from "React";
 import "./App.css"; //  className="toolbar"
 import style from "./style/index.scss";
 import { SYMBOL, MODE } from './canvas/util';
-import { useObjSize, useDrawing } from './canvas/Draw'
+import { useObjSize, useDrawing, makeLine, makeCircle, makeRect, makePolygon } from './canvas/Draw'
 import useRange from "./canvas/Range/useRange";
 
 // TODO: 文字是否Dom还是canvas展示？如何设置文字展示锚点位置？
@@ -17,23 +17,24 @@ export default function App() {
     const addSymbol = (type)=>{
         switch(type){
             case SYMBOL.LINE:
-                let line = new fabric.Line([0, 0, 200, 200], {
+                let line = makeLine([0, 0, 200, 200], {
                     id: Date.now(),
                     left: 100,
                     top: 100,
                     stroke: "blue",
                     strokeWidth: 3
                 });
-                canvas.add(line)
+                canvas.add(line);
+                break;
             case SYMBOL.POLYGON:
                 // let path = new fabric.Path('M 0 0 L 200 100 L 170 200 z');
                 // path.set({ left: 120, top: 120,fill:'red' });
                 // canvas.add(path);
-                let polygon = new fabric.Polyline([
+                let polygon = makePolygon([
                     {x: 0, y: 0},
                     {x: 100, y: 20},
-                    // {x: 150, y: 140},
-                    // {x: 200, y: 120}
+                    {x: 150, y: 140},
+                    {x: 200, y: 120}
                 ], {
                     left: 0, 
                     top: 0,
@@ -44,7 +45,10 @@ export default function App() {
                 canvas.add(polygon);
                 break;
             case SYMBOL.RECTANGLE:
-                let rect = new fabric.Rect({
+                // rect.on("play", ()=>{
+                //     console.log('play');
+                // })
+                canvas.add(makeRect({
                     left: 200, 
                     top: 200,
                     fill: "green",
@@ -52,23 +56,17 @@ export default function App() {
                     height: 200,
                     id: Date.now(),
                     name: "这是一个气泡标题"
-                });
-                rect.on("play", ()=>{
-                    console.log('play');
-                })
-                // setCurrent(rect)
-                canvas.add(rect);
+                }));
                 break;
             case SYMBOL.CIRCLE:
-                let circle = new fabric.Circle({
+                canvas.add(makeCircle({
                     left: 100, 
                     top: 100,
                     fill: "red",
                     radius: 100,
                     id: Date.now(),
                     name: "这是一个气泡标题"
-                })
-                canvas.add(circle);
+                }));
                 break;
             case SYMBOL.POLYLINE:
                 let polyline = new fabric.Polyline([
@@ -143,6 +141,8 @@ export default function App() {
                     <div className={style.toolbar__draw}>
                         <button onClick={() => drawing(SYMBOL.RECTANGLE)}>Draw Rect</button>
                         <button onClick={() => drawing(SYMBOL.CIRCLE)}>Draw Circle</button>
+                        <button onClick={() => drawing(SYMBOL.LINE)}>Draw Line</button>
+                        <button onClick={() => drawing(SYMBOL.POLYGON)}>Draw Polygon</button>
                         <button onClick={() => toggleMode(MODE.EDIT)}>Edit</button>
                         <button onClick={() => setRangeStatus(true)}>Start Machine</button>
                         <button onClick={() => setRangeStatus(false)}>Close Machine</button>

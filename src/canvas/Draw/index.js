@@ -3,7 +3,9 @@ import { useCallback, useEffect, useState, useRef } from "react";
 import { SYMBOL } from "../util/index"
 import { makeCircle } from "./Circle";
 import { makeRect } from "./Rectangle";
-import { e } from "mathjs";
+import { makePolygon } from "./Polygon";
+import { makePolyline } from "./Polyline";
+import { makeLine } from "./Line";
 
 function handleSize(setState, obj){
     setState({
@@ -92,53 +94,104 @@ export function useObjSize(canvas){
 export function useDrawing(canvas){
     let [drawing, setStatus] = useState(false);
     let [symbol, setSymbol] = useState(null);
-    let [shape, setShape] = useState(null)
-    let shapeRef = useRef()
     let [obj, setObj] = useState(null);
+    let shapeRef = useRef({});
 
+    let pointsRef = useRef([]);
+    let linesRef = useRef([]);
+
+    let onPolygonOver = useCallback(()=>{
+        canvas.remove(...pointsRef.current, ...linesRef.current)
+        pointsRef.current = linesRef.current = [];
+        canvas.off("mouse:move", onMouseMove)
+        let copyObj = makePolygon([...obj.get("points")]);
+        copyObj.on("mouse:dblclick", ()=>{
+            console.log('dbclick');
+        })
+        canvas.add(copyObj);
+        canvas.remove(obj);
+        setStatus(false);
+    }, [drawing, obj])
     let onMouseMove = useCallback((options)=>{
         console.log('draw move:', drawing);
         // shapeState不变：由于初始的该函数被on回调了，当函数变的时候，不会同步修改on的回调，仍然是原来的函数；
         // 使用Ref（或者普通let 变量）相当于全局变量
         if(drawing){
             const {x, y} = options.pointer;
-            // .set({})   .set("width", xxx)
+            // .set({})   .set("width", xxx) .setOptions({})
             if(symbol === SYMBOL.CIRCLE){
                 let radius = distance([shapeRef.current._centerX, shapeRef.current._centerY], [x, y]);
-                shapeRef.current = {
-                    ...shapeRef.current,
-                    left: shapeRef.current._centerX - radius,
-                    top: shapeRef.current._centerY - radius,
-                    radius
-                }
-            }else if(symbol === SYMBOL.RECTANGLE){ 
-                shapeRef.current = {...shapeRef.current, width: Math.abs(x - shapeRef.current.left), height: Math.abs(y - shapeRef.current.top)}
-            }
-            setShape(shapeRef.current)
-        }
-    }, [drawing, obj])
-    let onMouseDown = useCallback((options)=>{
-        console.log('draw down:', drawing);
-        if(drawing && obj){
-            canvas.add(obj);
-            canvas.on("mouse:move", onMouseMove)
-            const {x, y} = options.pointer;
-            if(symbol === SYMBOL.CIRCLE) {
-                shapeRef.current = {...shapeRef.current, _centerY: y, _centerX: x, top: y, left: x}
+                shapeRef.current = {...shapeRef.current, radius}
             }else if(symbol === SYMBOL.RECTANGLE){
-                shapeRef.current = {...shapeRef.current, top: y, left: x}
+                shapeRef.current = {...shapeRef.current, width: Math.abs(x - shapeRef.current.left), height: Math.abs(y - shapeRef.current.top)}
+            }else if(symbol === SYMBOL.LINE){
+                shapeRef.current = {...shapeRef.current, x2: x, y2: y}
+            } else if(symbol === SYMBOL.POLYGON) {
+                let points = obj.get("points");
+                points[pointsRef.current.length] = { x, y };
+                obj.set({points});
+                
+                linesRef.current[linesRef.current.length - 1].set({x2: x, y2: y});
             }
-            setShape(shapeRef.current)
+            updateShape();
+        }
+    }, [canvas, drawing, obj])
+    let onMouseDown = useCallback((options)=>{
+        if(drawing && obj){
+            const {x, y} = options.pointer;
+            // 绑定监听器
+            if(symbol === SYMBOL.POLYGON){
+                let isExist = canvas._objects.some((object)=> object.id === obj.id)
+                if(!isExist){
+                    canvas.add(obj);
+                    canvas.on("mouse:move", onMouseMove)
+                    canvas.on("mouse:dblclick", onPolygonOver)
+                }
+            }else{
+                canvas.add(obj);
+                canvas.on("mouse:move", onMouseMove)
+            }
+            // 添加初始配置
+            if(symbol === SYMBOL.CIRCLE) {
+                shapeRef.current = {_centerY: y, _centerX: x, top: y, left: x, originX: "center", originY: "center"}
+            }else if(symbol === SYMBOL.RECTANGLE){
+                shapeRef.current = {top: y, left: x}
+            } else if(symbol === SYMBOL.LINE) {
+                shapeRef.current = {x1: x, y1: y}
+            } else if(symbol === SYMBOL.POLYGON) {
+                const point = makeCircle({_centerX: x, _centerY: y, left: x - 5, top: y - 5, radius: 5, zIndex: 2, selectable: false,
+                    hasBorders: false,
+                    hasControls: false,
+                    evented: false,
+                    objectCaching: false})
+                const line = makeLine([x, y, x, y], {zIndex:4, selectable: false,
+                    hasBorders: false,
+                    hasControls: false,
+                    evented: false,
+                    objectCaching: false});
+                pointsRef.current = [...pointsRef.current, point];
+                linesRef.current  = [...linesRef.current, line];
+                
+                shapeRef.current = {points: [...pointsRef.current.map(pointer=>({x:pointer._centerX, y:pointer._centerY}))]}
+                canvas.add(point, line);
+            }
+            updateShape()
         }
     }, [drawing, obj, symbol])
     let onMouseUp = useCallback(()=>{
-        console.log('draw up:', drawing);
+        if(symbol === SYMBOL.POLYGON) return void 0;
         if(drawing){
             setStatus(false);
             obj.setCoords();
             canvas.off("mouse:move", onMouseMove)
         }
-    }, [drawing, obj])
+    }, [drawing, obj, symbol])
+
+    let updateShape = ()=>{
+        obj.setOptions(shapeRef.current);
+        obj.setCoords();
+        canvas.renderAll();
+    }
 
     useEffect(()=>{
         if(symbol){
@@ -150,37 +203,38 @@ export function useDrawing(canvas){
                 case SYMBOL.CIRCLE:
                     drawObj = makeCircle()
                     break;
+                case SYMBOL.LINE:
+                    drawObj = makeLine()
+                    break;
+                case SYMBOL.POLYGON:
+                    drawObj = makePolygon([], {
+                        // selectable: true,
+                        // hasBorders: false,
+                        // hasControls: true,
+                        // evented: true,
+                        objectCaching: false
+                    })
+                    break;
                 default:
                     break;
             }
             drawObj && setObj(drawObj);
+        } else{
+            setObj(null)
         }
     }, [symbol])
 
     useEffect(() => {
         if(canvas && drawing && obj) {
-            shapeRef.current = {
-                width: 0,
-                height: 0,
-                left: 0,
-                top: 0,
-            }
-            setShape(shapeRef.current)
             canvas.on("mouse:down", onMouseDown)
             canvas.on("mouse:up", onMouseUp)
         }
         return ()=>{
+            canvas?.off("mouse:dblclick", onPolygonOver)
             canvas?.off("mouse:down", onMouseDown)
             canvas?.off("mouse:up", onMouseUp)
         }
     }, [canvas, drawing, obj])
-
-    useEffect(()=>{
-        if(obj){
-            obj.setOptions(shapeRef.current);
-            canvas?.renderAll();
-        }
-    }, [obj, shape])
 
     return [(symbolType)=>{
         setSymbol(symbolType)
