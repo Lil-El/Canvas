@@ -102,7 +102,13 @@ export default function App() {
 
     useEffect(()=>{
         canvas && (canvas.selection = false);
-    }, [canvas])
+        window.onkeydown = function(ev){
+            const {keyCode, key} = ev;
+            if(keyCode === 8 && key === "Backspace") {
+                canvas.remove(current)
+            }
+        }
+    }, [canvas, current])
 
     useEffect(()=>{
         switch(curMode){
@@ -142,6 +148,7 @@ export default function App() {
                         <button onClick={() => drawing(SYMBOL.RECTANGLE)}>Draw Rect</button>
                         <button onClick={() => drawing(SYMBOL.CIRCLE)}>Draw Circle</button>
                         <button onClick={() => drawing(SYMBOL.LINE)}>Draw Line</button>
+                        <button onClick={() => drawing(SYMBOL.POLYLINE)}>Draw Polyline</button>
                         <button onClick={() => drawing(SYMBOL.POLYGON)}>Draw Polygon</button>
                         <button onClick={() => toggleMode(MODE.EDIT)}>Edit</button>
                         <button onClick={() => setRangeStatus(true)}>Start Machine</button>

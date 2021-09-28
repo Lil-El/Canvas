@@ -8,7 +8,7 @@ import { makePolyline } from "./Polyline";
 import { makeLine } from "./Line";
 
 function handleSize(setState, obj){
-    setState({
+    obj && setState({
         width: Math.round(obj.width * obj.scaleX),
         height: Math.round(obj.height * obj.scaleY)
     })
@@ -101,16 +101,23 @@ export function useDrawing(canvas){
     let linesRef = useRef([]);
 
     let onPolygonOver = useCallback(()=>{
-        canvas.remove(...pointsRef.current, ...linesRef.current)
-        pointsRef.current = linesRef.current = [];
         canvas.off("mouse:move", onMouseMove)
-        let copyObj = makePolygon([...obj.get("points")]);
-        // TODO: polygon的编辑操作
-        copyObj.on("mouse:dblclick", ()=>{
-            console.log('dbclick');
-        })
-        canvas.add(copyObj);
-        canvas.remove(obj);
+        canvas.remove(...pointsRef.current, ...linesRef.current)
+        if(obj.get("type") === SYMBOL.POLYLINE.toLowerCase()) {
+            shapeRef.current = {points: [...pointsRef.current.map(pointer=>({x:pointer._centerX, y:pointer._centerY}))]}
+            let copyObj = makePolyline(shapeRef.current.points)
+            canvas.add(copyObj);
+            canvas.remove(obj);
+        } else if(obj.get("type") === SYMBOL.POLYGON.toLowerCase()) {
+            let copyObj = makePolygon([...obj.get("points")]);
+            // TODO: polygon的编辑操作
+            copyObj.on("mouse:dblclick", ()=>{
+                console.log('dbclick');
+            })
+            canvas.add(copyObj);
+            canvas.remove(obj);
+        }
+        pointsRef.current = linesRef.current = [];
         setStatus(false);
     }, [drawing, obj])
     let onMouseMove = useCallback((options)=>{
@@ -124,13 +131,25 @@ export function useDrawing(canvas){
                 let radius = distance([shapeRef.current._centerX, shapeRef.current._centerY], [x, y]);
                 shapeRef.current = {...shapeRef.current, radius}
             }else if(symbol === SYMBOL.RECTANGLE){
-                shapeRef.current = {...shapeRef.current, width: Math.abs(x - shapeRef.current.left), height: Math.abs(y - shapeRef.current.top)}
+                shapeRef.current = {
+                    ...shapeRef.current,
+                    left: x > shapeRef.current._anchorX ? shapeRef.current._anchorX : x,
+                    top: y > shapeRef.current._anchorY ? shapeRef.current._anchorY : y,
+                    width: Math.abs(x - shapeRef.current._anchorX), 
+                    height: Math.abs(y - shapeRef.current._anchorY)
+                }
             }else if(symbol === SYMBOL.LINE){
                 shapeRef.current = {...shapeRef.current, x2: x, y2: y}
             } else if(symbol === SYMBOL.POLYGON) {
                 let points = obj.get("points");
                 points[pointsRef.current.length] = { x, y };
                 obj.set({points});
+                
+                linesRef.current[linesRef.current.length - 1].set({x2: x, y2: y});
+            } else if(symbol === SYMBOL.POLYLINE){
+                // let points = obj.get("points");
+                // points[pointsRef.current.length] = { x, y };
+                // obj.set({points});
                 
                 linesRef.current[linesRef.current.length - 1].set({x2: x, y2: y});
             }
@@ -141,7 +160,7 @@ export function useDrawing(canvas){
         if(drawing && obj){
             const {x, y} = options.pointer;
             // 绑定监听器
-            if(symbol === SYMBOL.POLYGON){
+            if(symbol === SYMBOL.POLYGON || symbol === SYMBOL.POLYLINE){
                 let isExist = canvas._objects.some((object)=> object.id === obj.id)
                 if(!isExist){
                     canvas.add(obj);
@@ -156,7 +175,7 @@ export function useDrawing(canvas){
             if(symbol === SYMBOL.CIRCLE) {
                 shapeRef.current = {_centerY: y, _centerX: x, top: y, left: x, originX: "center", originY: "center"}
             }else if(symbol === SYMBOL.RECTANGLE){
-                shapeRef.current = {top: y, left: x}
+                shapeRef.current = {top: y, left: x, _anchorX: x, _anchorY: y}
             } else if(symbol === SYMBOL.LINE) {
                 shapeRef.current = {x1: x, y1: y}
             } else if(symbol === SYMBOL.POLYGON) {
@@ -175,12 +194,27 @@ export function useDrawing(canvas){
                 
                 shapeRef.current = {points: [...pointsRef.current.map(pointer=>({x:pointer._centerX, y:pointer._centerY}))]}
                 canvas.add(point, line);
+            } else if(symbol === SYMBOL.POLYLINE) {
+                const point = makeCircle({_centerX: x, _centerY: y, left: x - 5, top: y - 5, radius: 5, zIndex: 2, selectable: false,
+                    hasBorders: false,
+                    hasControls: false,
+                    evented: false,
+                    objectCaching: false})
+                const line = makeLine([x, y, x, y], {zIndex:4, selectable: false,
+                    hasBorders: false,
+                    hasControls: false,
+                    evented: false,
+                    objectCaching: false});
+                pointsRef.current = [...pointsRef.current, point];
+                linesRef.current  = [...linesRef.current, line];
+                
+                canvas.add(point, line);
             }
             updateShape()
         }
     }, [drawing, obj, symbol])
     let onMouseUp = useCallback(()=>{
-        if(symbol === SYMBOL.POLYGON) return void 0;
+        if(symbol === SYMBOL.POLYGON || symbol === SYMBOL.POLYLINE) return void 0;
         if(drawing){
             setStatus(false);
             obj.setCoords();
@@ -206,6 +240,9 @@ export function useDrawing(canvas){
                     break;
                 case SYMBOL.LINE:
                     drawObj = makeLine()
+                    break;
+                case SYMBOL.POLYLINE:
+                    drawObj = makePolyline()
                     break;
                 case SYMBOL.POLYGON:
                     drawObj = makePolygon([], {
