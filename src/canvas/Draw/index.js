@@ -103,20 +103,15 @@ export function useDrawing(canvas){
     let onPolygonOver = useCallback(()=>{
         canvas.off("mouse:move", onMouseMove)
         canvas.remove(...pointsRef.current, ...linesRef.current)
+        shapeRef.current = {points: [...pointsRef.current.map(pointer=>({x:pointer._centerX, y:pointer._centerY}))]}
+        let copyObj;
         if(obj.get("type") === SYMBOL.POLYLINE.toLowerCase()) {
-            shapeRef.current = {points: [...pointsRef.current.map(pointer=>({x:pointer._centerX, y:pointer._centerY}))]}
-            let copyObj = makePolyline(shapeRef.current.points)
-            canvas.add(copyObj);
-            canvas.remove(obj);
+            copyObj = makePolyline(shapeRef.current.points)
         } else if(obj.get("type") === SYMBOL.POLYGON.toLowerCase()) {
-            let copyObj = makePolygon([...obj.get("points")]);
-            // TODO: polygon的编辑操作
-            copyObj.on("mouse:dblclick", ()=>{
-                console.log('dbclick');
-            })
-            canvas.add(copyObj);
-            canvas.remove(obj);
+            copyObj = makePolygon(shapeRef.current.points);
         }
+        canvas.add(copyObj);
+        canvas.remove(obj);
         pointsRef.current = linesRef.current = [];
         setStatus(false);
     }, [drawing, obj])

@@ -8,3 +8,8 @@ export function makeCircle(options){
         ...options
     })
 }
+export function makeOperateCircle(){
+    return makeCircle({
+        _isOperate: true
+    })
+}

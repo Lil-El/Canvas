@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from "React";
 import "./App.css"; //  className="toolbar"
 import style from "./style/index.scss";
 import { SYMBOL, MODE } from './canvas/util';
-import { useObjSize, useDrawing, makeLine, makeCircle, makeRect, makePolygon } from './canvas/Draw'
+import { useObjSize, useDrawing, makeLine, makeCircle, makeRect, makePolygon, makeOperateCircle } from './canvas/Draw'
 import useRange from "./canvas/Range/useRange";
 
 // TODO: 文字是否Dom还是canvas展示？如何设置文字展示锚点位置？
@@ -33,21 +33,18 @@ export default function App() {
                 let polygon = makePolygon([
                     {x: 0, y: 0},
                     {x: 100, y: 20},
+                    {x: 200, y: 120},
                     {x: 150, y: 140},
-                    {x: 200, y: 120}
                 ], {
-                    left: 0, 
+                    left: 0,
                     top: 0,
                     fill:'red',
-                    width: 100,
-                    height: 100
+                    objectCaching: false,
+		            transparentCorners: false,
                 });
                 canvas.add(polygon);
                 break;
             case SYMBOL.RECTANGLE:
-                // rect.on("play", ()=>{
-                //     console.log('play');
-                // })
                 canvas.add(makeRect({
                     left: 200, 
                     top: 200,
@@ -81,7 +78,8 @@ export default function App() {
                     stroke: "red",
                     strokeWidth: 3,
                     id: Date.now(),
-                    name: "这是一个气泡标题"
+                    objectCaching: false,
+		            transparentCorners: false,
                 })
                 canvas.add(polyline);
                 break;
@@ -107,6 +105,77 @@ export default function App() {
             if(keyCode === 8 && key === "Backspace") {
                 canvas.remove(current)
             }
+        }
+        function polygonPositionHandler(dim, finalMatrix, fabricObject) {
+            let x = (fabricObject.points[this.pointIndex].x - fabricObject.pathOffset.x);
+            let y = (fabricObject.points[this.pointIndex].y - fabricObject.pathOffset.y);
+            console.log(this.pointIndex, fabricObject.points[this.pointIndex].x, fabricObject.pathOffset.x);
+            console.log(this.pointIndex, fabricObject.points[this.pointIndex].y, fabricObject.pathOffset.y);
+            return fabric.util.transformPoint( { x, y },
+                fabric.util.multiplyTransformMatrices(
+                    fabricObject.canvas.viewportTransform,
+                    fabricObject.calcTransformMatrix()
+                )
+            );
+        }
+        function actionHandler(eventData, transform, x, y) {
+            var polygon = transform.target,
+                currentControl = polygon.controls[polygon.__corner],
+                mouseLocalPosition = polygon.toLocalPoint(new fabric.Point(x, y), 'center', 'center'),
+            polygonBaseSize = polygon._getNonTransformedDimensions(),
+                    size = polygon._getTransformedDimensions(0, 0),
+                    finalPointPosition = {
+                        x: mouseLocalPosition.x * polygonBaseSize.x / size.x + polygon.pathOffset.x,
+                        y: mouseLocalPosition.y * polygonBaseSize.y / size.y + polygon.pathOffset.y
+                    };
+            polygon.points[currentControl.pointIndex] = finalPointPosition;
+            return true;
+        }
+        function anchorWrapper(anchorIndex, fn) {
+          return function(eventData, transform, x, y) {
+            var fabricObject = transform.target,
+                absolutePoint = fabric.util.transformPoint({
+                    x: (fabricObject.points[anchorIndex].x - fabricObject.pathOffset.x),
+                    y: (fabricObject.points[anchorIndex].y - fabricObject.pathOffset.y),
+                }, fabricObject.calcTransformMatrix()),
+                actionPerformed = fn(eventData, transform, x, y),
+                newDim = fabricObject._setPositionDimensions({}),
+                polygonBaseSize = fabricObject._getNonTransformedDimensions(),
+                newX = (fabricObject.points[anchorIndex].x - fabricObject.pathOffset.x) / polygonBaseSize.x,
+                    newY = (fabricObject.points[anchorIndex].y - fabricObject.pathOffset.y) / polygonBaseSize.y;
+            fabricObject.setPositionByOrigin(absolutePoint, newX + 0.5, newY + 0.5);
+            return actionPerformed;
+          }
+        }
+        if (current && (current.get("type") === SYMBOL.POLYLINE.toLowerCase()|| current.get("type") === SYMBOL.POLYGON.toLowerCase())) {
+            canvas?.on("mouse:dblclick", ()=>{
+                current.cornerStyle = 'circle';
+                current.cornerColor = 'blue';
+                current.hasBorders  = false;
+                current.edit        = true;
+                current.controls = current.points.reduce(function(acc, point, index) {
+                    acc['p' + index] = new fabric.Control({
+                        positionHandler: polygonPositionHandler,
+                        actionHandler: anchorWrapper(index > 0 ? index - 1 : (current.points.length - 1), actionHandler),
+                        actionName: 'modifyPolygon',
+                        pointIndex: index
+                    });
+                    return acc;
+                }, {});
+                canvas.requestRenderAll();
+            })
+        }
+        return ()=>{
+            if(current) {
+                current.cornerStyle = fabric.Object.prototype.cornerStyle;
+                current.cornerColor = fabric.Object.prototype.cornerColor;
+                current.controls = fabric.Object.prototype.controls;
+                current.edit = false;
+                current.hasBorders = true;
+                canvas.requestRenderAll();
+            }
+            canvas?.off("mouse:dblclick");
+
         }
     }, [canvas, current])
 
