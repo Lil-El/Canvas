@@ -1,98 +1,13 @@
 import { distance } from "../../util/math";
 import { useCallback, useEffect, useState, useRef } from "react";
-import { SYMBOL } from "../util/index"
+import { MODE, SYMBOL } from "../util/index"
 import { makeCircle } from "./Circle";
 import { makeRect } from "./Rectangle";
 import { makePolygon } from "./Polygon";
 import { makePolyline } from "./Polyline";
 import { makeLine } from "./Line";
 
-function handleSize(setState, obj){
-    obj && setState({
-        width: Math.round(obj.width * obj.scaleX),
-        height: Math.round(obj.height * obj.scaleY)
-    })
-}
-export function useObjSize(canvas){
-    let [current, setCurrent] = useState(null);
-    let [queue, setQueue] = useState([])
-    let [size, setSize] = useState({
-        width: 0,
-        height: 0
-    })
-    
-    let state = null;
-    let onMouseDown = useCallback(({target})=>{
-        console.log('onMouseDown');
-        state = target;
-        if(state){
-            handleSize(setSize, target)
-            canvas.on("mouse:move", onMouseMove)
-        }
-    }, [canvas])
-    let onMouseMove = useCallback(({target})=>{
-        console.log('onMouseMove');
-        console.log(state);
-        if(state){
-            handleSize(setSize, target)
-        }
-    }, [canvas])
-    let onMouseUp = useCallback(()=>{
-        console.log('onMouseUp');
-        state = null;
-        canvas.off("mouse:move");
-    }, [canvas])
-    let onSelected = useCallback(function() {
-        console.log('onSelected');
-        canvas.on("mouse:down", onMouseDown)
-        canvas.on("mouse:up", onMouseUp)
-    }, [canvas])
-    let onModified = useCallback(function({target}) { // PS：不能在这里移除 canvas 事件
-        console.log('onModified');
-        handleSize(setSize, target)
-    }, [canvas])
-
-    function onSizeChange(canvas, obj){
-        if(!obj) return void 0;
-        if(queue?.includes(obj)){
-        }else{
-            obj.on("selected", onSelected)
-            obj.on("modified", onModified)
-        }
-        return () => {
-            console.log('unsub');
-            canvas.off("mouse:down", onMouseDown);
-            canvas.off("mouse:move");
-            canvas.off("mouse:up", onMouseUp);
-        }
-    }
-
-    useEffect(()=>{
-        canvas && canvas.on("mouse:down", ({target})=>{
-            setCurrent(target)
-        })
-    }, [canvas])
-
-    useEffect(()=>{
-        console.log("set current, curQueue: ", queue);
-        let removeListener = null;
-        if(!queue.includes(current)){ // 包含了就不添加事件了，已经添加过了
-            current && setQueue([...new Set([...queue, current])]);
-        }
-        if(current===null){
-            setSize(null)
-        }
-        removeListener = onSizeChange(canvas, current);
-        return ()=>{
-            removeListener?.();
-        };
-    }, [current])
-    
-    return [current, size]
-}
-
 export function useDrawing(canvas){
-    let [drawing, setStatus] = useState(false);
     let [symbol, setSymbol] = useState(null);
     let [obj, setObj] = useState(null);
     let shapeRef = useRef({});
@@ -113,13 +28,12 @@ export function useDrawing(canvas){
         canvas.add(copyObj);
         canvas.remove(obj);
         pointsRef.current = linesRef.current = [];
-        setStatus(false);
-    }, [drawing, obj])
+        endDrawing();
+    }, [canvas, obj])
     let onMouseMove = useCallback((options)=>{
-        console.log('draw move:', drawing);
         // shapeState不变：由于初始的该函数被on回调了，当函数变的时候，不会同步修改on的回调，仍然是原来的函数；
         // 使用Ref（或者普通let 变量）相当于全局变量
-        if(drawing){
+        if(obj){
             const {x, y} = options.pointer;
             // .set({})   .set("width", xxx) .setOptions({})
             if(symbol === SYMBOL.CIRCLE){
@@ -150,13 +64,14 @@ export function useDrawing(canvas){
             }
             updateShape();
         }
-    }, [canvas, drawing, obj])
+    }, [canvas, obj])
     let onMouseDown = useCallback((options)=>{
-        if(drawing && obj){
+        if(obj){    
             const {x, y} = options.pointer;
             // 绑定监听器
             if(symbol === SYMBOL.POLYGON || symbol === SYMBOL.POLYLINE){
                 let isExist = canvas._objects.some((object)=> object.id === obj.id)
+                console.log(canvas._objects);
                 if(!isExist){
                     canvas.add(obj);
                     canvas.on("mouse:move", onMouseMove)
@@ -207,20 +122,20 @@ export function useDrawing(canvas){
             }
             updateShape()
         }
-    }, [drawing, obj, symbol])
+    }, [obj, symbol])
     let onMouseUp = useCallback(()=>{
         if(symbol === SYMBOL.POLYGON || symbol === SYMBOL.POLYLINE) return void 0;
-        if(drawing){
-            setStatus(false);
+        if(obj){
+            endDrawing();
             obj.setCoords();
             canvas.off("mouse:move", onMouseMove)
         }
-    }, [drawing, obj, symbol])
+    }, [obj, symbol])
 
     let updateShape = ()=>{
         obj.setOptions(shapeRef.current);
         obj.setCoords();
-        canvas.renderAll();
+        canvas.requestRenderAll();
     }
 
     useEffect(()=>{
@@ -258,7 +173,23 @@ export function useDrawing(canvas){
     }, [symbol])
 
     useEffect(() => {
-        if(canvas && drawing && obj) {
+        // Tips: 避免在绘制时选中其他obj而产生的bug
+        if(obj) {
+            canvas.selection = false;
+            canvas._objects.forEach(obj => {
+                obj.selectable = false;
+                obj.evented = false;
+                obj.hasControls = false;
+            })
+        } else if(!obj && canvas){
+            canvas.selection = true;
+            canvas._objects.forEach(obj => {
+                obj.selectable = true;
+                obj.evented = true;
+                obj.hasControls = true;
+            })
+        }
+        if(canvas && obj) {
             canvas.on("mouse:down", onMouseDown)
             canvas.on("mouse:up", onMouseUp)
         }
@@ -267,14 +198,16 @@ export function useDrawing(canvas){
             canvas?.off("mouse:down", onMouseDown)
             canvas?.off("mouse:up", onMouseUp)
         }
-    }, [canvas, drawing, obj])
+    }, [canvas, obj])
 
-    return [(symbolType)=>{
-        setSymbol(symbolType)
-        setStatus(true);
-    }, ()=>{
+    let endDrawing = ()=>{
         setSymbol(null);
-        setStatus(false);
+        canvas.set("$mode", MODE.NONE)
+    };
+
+    return [(symbol)=>{
+        canvas.set("$mode", MODE.DRAW);
+        setSymbol(symbol);
     }]
 }
 
