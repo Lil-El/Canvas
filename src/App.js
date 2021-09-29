@@ -21,16 +21,6 @@ export default function App() {
 
     const addSymbol = (type)=>{
         switch(type){
-            case SYMBOL.LINE:
-                let line = makeLine([0, 0, 200, 200], {
-                    id: Date.now(),
-                    left: 100,
-                    top: 100,
-                    stroke: "blue",
-                    strokeWidth: 3
-                });
-                canvas.add(line);
-                break;
             case SYMBOL.POLYGON:
                 // let path = new fabric.Path('M 0 0 L 200 100 L 170 200 z');
                 // path.set({ left: 120, top: 120,fill:'red' });
@@ -114,7 +104,6 @@ export default function App() {
     return (
         <div className={`${style["flex-inline-item"]}`}>
             <div className={`${style["flex"]} ${style["flex-column"]}`}>
-                <button onClick={() => addSymbol(SYMBOL.LINE)}>Add Line</button>
                 <button onClick={() => addSymbol(SYMBOL.CIRCLE)}>Add Circle</button>
                 <button onClick={() => addSymbol(SYMBOL.RECTANGLE)}>Add Rect</button>
                 <button onClick={() => addSymbol(SYMBOL.POLYGON)}>Add Polygon</button>
@@ -126,7 +115,6 @@ export default function App() {
                     <div className={style.toolbar__draw}>
                         <button onClick={() => startDrawing(SYMBOL.RECTANGLE)}>Draw Rect</button>
                         <button onClick={() => startDrawing(SYMBOL.CIRCLE)}>Draw Circle</button>
-                        <button onClick={() => startDrawing(SYMBOL.LINE)}>Draw Line</button>
                         <button onClick={() => startDrawing(SYMBOL.POLYLINE)}>Draw Polyline</button>
                         <button onClick={() => startDrawing(SYMBOL.POLYGON)}>Draw Polygon</button>
                         <button onClick={() => setRangeStatus(true)}>Start Machine</button>

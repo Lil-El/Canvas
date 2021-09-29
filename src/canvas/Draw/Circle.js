@@ -4,7 +4,7 @@ export function makeCircle(options){
         top: 0,
         fill: "red",
         radius: 0,
-        id: Date.now(),
+        id: new Date(),
         ...options
     })
 }

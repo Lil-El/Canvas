@@ -4,6 +4,8 @@ export function makePolyline(points = [], options) {
         fill: "transparent",
         stroke: "red",
         strokeWidth: 3,
+        objectCaching: false,
+		transparentCorners: false,
         ...options,
     });
 }

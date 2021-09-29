@@ -2,7 +2,7 @@
 export const SYMBOL = {
     LINE: "line",
     CIRCLE: "circle",
-    RECTANGLE: "rectangle",
+    RECTANGLE: "rect",
     POLYGON: "polygon",
     POLYLINE: "polyline"
 };

@@ -1,6 +1,6 @@
 export function makeRect(options){
     return new fabric.Rect({
-        id: Date.now(),
+        id: new Date(),
         left: 0,
         top: 0,
         fill: "green",
