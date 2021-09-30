@@ -6,7 +6,7 @@ import { makeRect } from "./Rectangle";
 import { makePolygon } from "./Polygon";
 import { makePolyline } from "./Polyline";
 import { makeLine } from "./Line";
-// TODO: 绘制一半时，改为另一个图形，的bug修改
+
 export function useDrawing(canvas){
     let [symbol, setSymbol] = useState(null); // 当前绘制的形状
     let [obj, setObj] = useState(null); // 当前绘制的图形object
@@ -144,6 +144,8 @@ export function useDrawing(canvas){
                         objectCaching: false
                     })
                     break;
+                case SYMBOL.ITEXT:
+                    // drawObj = makeText()
                 default:
                     break;
             }

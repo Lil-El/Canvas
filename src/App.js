@@ -8,9 +8,12 @@ import { useEditing } from "./canvas/Edit";
 import { useDelete } from "./canvas/Delete";
 import { useSize } from "./canvas/Size";
 
+const RADIAN = 2 * Math.PI / 360;
+
 export default function App() {
     // PS: let 定义的对象；在useEffect可能无法获取到
-    
+    const [dataURL, setDataURL] = useState("")
+
     const [ canvas, setCanvas ] = useState(null);
     useSize(canvas)
     const [ size ] = useSize(canvas);
@@ -78,23 +81,82 @@ export default function App() {
                 })
                 canvas.add(polyline);
                 break;
+            case SYMBOL.ITEXT:
+                let p = new fabric.IText("", {
+                    stroke: "red",
+                    fill: "blue",
+                    fontSize: 18,
+                    lineHeight: 1,
+                    fontWeight: "bold",
+                    hasControls: false,
+                    objectCaching: false
+                })
+                canvas.add(p)
+                let text = "水，电费水电费水电费规划局规划局规划局" // 不支持输入空格
+                let next = (i)=>{
+                    if(i >= text.length) return void p.set("text", text);
+                    setTimeout(()=>{
+                        let space = (i-1) < 0 ? "" : " ".repeat(i*4)
+                        let word = text[i];
+                        p.set("text", space + word);
+                        canvas.requestRenderAll()
+                        // p.animate('opacity', '1', {
+                        //     from: "0",
+                        //     duration: 500,
+                        //     onChange: canvas.requestRenderAll.bind(canvas),
+                        // });
+                        next(i+1)
+                    }, 500)
+                }
+                next(0);
             default:
                 break;
         }
     }
 
     const addPopup = ()=>{
-        const content = makeRect({
-            rx: 5,
-            ry: 5,
-            width: 100,
-            height: 60,
-            fill: "transparent",
-            stroke: "#000000",
-        })
-        canvas.add(content)
+        /**
+         *  C 右上角
+            c 右下角
+            c 下边框
+            c 左下角
+            l 左边框
+            C 左上角
+         */
+        const path = new fabric.Path(`
+            M 0,0
+            L 100, 0
+            C 100, 0 120, 0 120 20
+            L 120 80
+            c 0, 0 0, 20 -20, 20
+            c 0, 0 -100, 0 -100, 0
+            c 0, 0 -20, 0 -20, -20
+            l 0, -60
+            C -20, 20 -20, 0 0, 0
+        `, {
+            left: 0,
+            fill: "#ffffff",
+            stroke: "black",
+            hasControls: false
+        });
+        canvas.add(path)
     }
-
+    const exportPNG = ()=>{
+        let group = new fabric.Group();
+        canvas.forEachObject((obj)=>{
+            obj.get("id") && group.addWithUpdate(obj)
+        })
+        canvas.add(group);
+        setDataURL(canvas.toDataURL({
+            format: "png",
+            left: group.left,
+            top: group.top,
+            width: group.width,
+            height: group.height
+        }));
+        group.destroy();
+        canvas.remove(group);
+    }
     useEffect(()=>{
         let _canvas = new fabric.Canvas("canvas");
         _canvas.set("$mode", MODE.NONE)
@@ -104,12 +166,14 @@ export default function App() {
     return (
         <div className={`${style["flex-inline-item"]}`}>
             <div className={`${style["flex"]} ${style["flex-column"]}`}>
+                <button onClick={() => addSymbol(SYMBOL.ITEXT)}>Add IText</button>
                 <button onClick={() => addSymbol(SYMBOL.CIRCLE)}>Add Circle</button>
                 <button onClick={() => addSymbol(SYMBOL.RECTANGLE)}>Add Rect</button>
                 <button onClick={() => addSymbol(SYMBOL.POLYGON)}>Add Polygon</button>
                 <button onClick={() => addSymbol(SYMBOL.POLYLINE)}>Add Polyline</button>
                 <button onClick={() => addPopup()}>Add Popup</button>
             </div>
+            <img src={dataURL} />
             <div className={`${style["flex-inline-item"]} ${style["flex-column"]}`}>
                 <div className={style.toolbar}>
                     <div className={style.toolbar__draw}>
@@ -117,13 +181,14 @@ export default function App() {
                         <button onClick={() => startDrawing(SYMBOL.CIRCLE)}>Draw Circle</button>
                         <button onClick={() => startDrawing(SYMBOL.POLYLINE)}>Draw Polyline</button>
                         <button onClick={() => startDrawing(SYMBOL.POLYGON)}>Draw Polygon</button>
+                        <button onClick={() => startDrawing(SYMBOL.ITEXT)}>Draw Text</button>
                         <button onClick={() => setRangeStatus(true)}>Start Machine</button>
                         <button onClick={() => setRangeStatus(false)}>Close Machine</button>
                     </div>
                 </div>
                 <div className={style.toolbar}>
                     <div className={style.toolbar__draw}>
-                        <button></button>
+                        <button onClick={exportPNG}>export png</button>
                     </div>
                 </div>
                 <div>{size && `${size[0]}, ${size[1]}`}</div>
