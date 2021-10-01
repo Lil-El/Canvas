@@ -5,7 +5,7 @@ import { SYMBOL, MODE } from './canvas/util';
 import { useObjSize, makeLine, makeCircle, makeRect, makePolygon, makeOperateCircle } from './canvas/Symbol';
 import useRange from "./canvas/Range/useRange";
 import { useEditing } from "./canvas/Edit";
-import { useDelete } from "./canvas/Delete";
+import { useKeydown } from "./canvas/Keydown";
 import { useSize } from "./canvas/Size";
 import { makePopup } from "./canvas/Popup";
 import {useDrawing} from "./canvas/Draw"
@@ -21,15 +21,12 @@ export default function App() {
     const [ size ] = useSize(canvas);
     const [ startDrawing ] = useDrawing(canvas);
     useEditing(canvas);
-    useDelete(canvas);
+    useKeydown(canvas);
     const [ isRange, setRangeStatus ] = useRange(canvas);
 
     const addSymbol = (type)=>{
         switch(type){
             case SYMBOL.POLYGON:
-                // let path = new fabric.Path('M 0 0 L 200 100 L 170 200 z');
-                // path.set({ left: 120, top: 120,fill:'red' });
-                // canvas.add(path);
                 let polygon = makePolygon([
                     {x: 0, y: 0},
                     {x: 100, y: 20},

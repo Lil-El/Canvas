@@ -7,8 +7,10 @@
 - requestRenderAll | renderAll
 - add(obj, obj, ...)
 - remove(obj, obj, ...)
+- setActiveObject(): 设置当前活跃的object
 - getActiveObjects: 获取选中的所有object
 - getActiveObject: 获取当前选中的object，如果选中了多个，返回的是一个object包含了多个object
+- isEmpty(): 判断canvas是否为空
 
 ### Object
 
@@ -16,7 +18,8 @@
 
 - coord：指的是物体外边可以控制旋转、大小的线框 [When to cass setCoords](https://github.com/fabricjs/fabric.js/wiki/When-to-call-setCoords)
 
-- setCoords: 更新coord
+- setCoords(): 更新coord
+- selection: Boolean
 
 ### Line
 
@@ -52,6 +55,7 @@
 
 - add：添加object进group中
 - addWithUpdate：添加的同时且更新
+- destroy(): 从canvas remove时，同时需要destroy group；才可是objects状态恢复
 
 ### util
 
@@ -62,4 +66,5 @@
 - popup 尖角位置配置；popup垂直反转尖角位置问题
 - 文字换行动态展示；文字宽度修改动态修改文字换行
 - 曲线绘制
-- 键盘事件添加 全选 拷贝 粘贴
+
+- React项目搭建
