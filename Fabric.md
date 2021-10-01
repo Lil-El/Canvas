@@ -32,13 +32,19 @@
 
 ### Path
 
-> C、L表示绝对坐标位置
-> c、l表示相对上一个点的偏移量
+- M = moveto
+- L = 线; L: x, y   l: dx, dy
+- H = horizontal 线; H: x   h: dx
+- V = vertical 线; V: y   v: dy
+- C = curveto
+  - 0,0 20, 0 20, 20;这三个点可以绘制一个圆形的1/4的边框。0,0和20,20在边框上
+- S = smooth curveto
+- Q = quadratic 二次贝瑟尔曲线
+- T = smooth quadratic 贝瑟尔曲线
+- A = elliptical Arc 椭圆弧线
+- Z = 闭合
 
-- M: 起始
-- C: 曲线（弧）（贝瑟尔曲线）
-- L: 直线
-- z: 闭合
+>以上所有命令均允许小写字母。大写表示绝对定位，小写表示相对定位。
 
 ### Group
 
@@ -50,3 +56,10 @@
 ### util
 
 - addListener | removeListener
+
+# TODO: 
+
+- popup 尖角位置配置；popup垂直反转尖角位置问题
+- 文字换行动态展示；文字宽度修改动态修改文字换行
+- useCurrent优化事件
+- 

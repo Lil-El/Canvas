@@ -5,7 +5,8 @@ export const SYMBOL = {
     RECTANGLE: "rect",
     POLYGON: "polygon",
     POLYLINE: "polyline",
-    ITEXT: "i-text"
+    ITEXT: "i-text",
+    NONE: null
 };
 
 export const MODE = {

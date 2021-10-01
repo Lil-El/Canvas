@@ -1,11 +1,7 @@
 import { distance } from "../../util/math";
 import { useCallback, useEffect, useState, useRef } from "react";
 import { MODE, SYMBOL } from "../util/index"
-import { makeCircle } from "./Circle";
-import { makeRect } from "./Rectangle";
-import { makePolygon } from "./Polygon";
-import { makePolyline } from "./Polyline";
-import { makeLine } from "./Line";
+import { makeCircle, makeRect, makePolygon, makePolyline, makeLine } from "../Symbol";
 
 export function useDrawing(canvas){
     let [symbol, setSymbol] = useState(null); // 当前绘制的形状
@@ -204,9 +200,3 @@ export function useDrawing(canvas){
         obj?.get("type") === symbol ? setTimeout(()=>{setSymbol(symbol)}) : setSymbol(symbol)
     }]
 }
-
-export * from './Circle'
-export * from './Line'
-export * from './Polygon'
-export * from './Polyline'
-export * from './Rectangle'

@@ -1,20 +1,22 @@
-import React, { useEffect, useMemo, useState } from "React";
+import React, { useEffect, useState } from "React";
 import "./App.css"; //  className="toolbar"
 import style from "./style/index.scss";
 import { SYMBOL, MODE } from './canvas/util';
-import { useObjSize, useDrawing, makeLine, makeCircle, makeRect, makePolygon, makeOperateCircle } from './canvas/Draw'
+import { useObjSize, makeLine, makeCircle, makeRect, makePolygon, makeOperateCircle } from './canvas/Symbol';
 import useRange from "./canvas/Range/useRange";
 import { useEditing } from "./canvas/Edit";
 import { useDelete } from "./canvas/Delete";
 import { useSize } from "./canvas/Size";
-
-const RADIAN = 2 * Math.PI / 360;
+import { makePopup } from "./canvas/Popup";
+import {useDrawing} from "./canvas/Draw"
+import useCurrent from "./canvas/useCurrent";
 
 export default function App() {
     // PS: let 定义的对象；在useEffect可能无法获取到
     const [dataURL, setDataURL] = useState("")
 
     const [ canvas, setCanvas ] = useState(null);
+    const [current] = useCurrent(canvas)
     useSize(canvas)
     const [ size ] = useSize(canvas);
     const [ startDrawing ] = useDrawing(canvas);
@@ -115,37 +117,15 @@ export default function App() {
     }
 
     const addPopup = ()=>{
-        /**
-         *  C 右上角
-            c 右下角
-            c 下边框
-            c 左下角
-            l 左边框
-            C 左上角
-         */
-        const path = new fabric.Path(`
-            M 0,0
-            L 100, 0
-            C 100, 0 120, 0 120 20
-            L 120 80
-            c 0, 0 0, 20 -20, 20
-            c 0, 0 -100, 0 -100, 0
-            c 0, 0 -20, 0 -20, -20
-            l 0, -60
-            C -20, 20 -20, 0 0, 0
-        `, {
-            left: 0,
-            fill: "#ffffff",
-            stroke: "black",
-            hasControls: false
-        });
-        canvas.add(path)
+        const path = makePopup(canvas)
+        canvas.add(path);
     }
     const exportPNG = ()=>{
         let group = new fabric.Group();
         canvas.forEachObject((obj)=>{
             obj.get("id") && group.addWithUpdate(obj)
         })
+        if(!group.getObjects().length) return void group.destroy();
         canvas.add(group);
         setDataURL(canvas.toDataURL({
             format: "png",
@@ -156,6 +136,12 @@ export default function App() {
         }));
         group.destroy();
         canvas.remove(group);
+    }
+    const showAll = ()=>{
+        console.log(canvas.getObjects());
+    }
+    const toTop = ()=>{
+        current.bringToFront();
     }
     useEffect(()=>{
         let _canvas = new fabric.Canvas("canvas");
@@ -189,6 +175,8 @@ export default function App() {
                 <div className={style.toolbar}>
                     <div className={style.toolbar__draw}>
                         <button onClick={exportPNG}>export png</button>
+                        <button onClick={showAll}>show all</button>
+                        <button onClick={toTop}>to Top</button>
                     </div>
                 </div>
                 <div>{size && `${size[0]}, ${size[1]}`}</div>
