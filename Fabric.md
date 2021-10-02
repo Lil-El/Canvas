@@ -61,6 +61,11 @@
 ### util
 
 - addListener | removeListener
+- sin | cos
+- degreesToRadians | radiansToDegrees 
+- 点以弧度进行旋转
+- HTML相关dom操作
+- transform matrix：变换矩阵
 
 # TODO: 
 

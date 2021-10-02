@@ -9,8 +9,10 @@ export function makeCircle(options){
         ...options
     })
 }
-export function makeOperateCircle(){
+export function makeOperateCircle(options){
     return makeCircle({
-        _isOperate: true
+        _isOperate: true,
+        hasControls: false,
+        ...options
     })
 }

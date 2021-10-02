@@ -7,6 +7,7 @@ export function makePolyline(points = [], options) {
         objectCaching: false,
 		transparentCorners: false,
         strokeUniform: true,
+        strokeDashArray: [30, 10],
         ...options,
     });
 }

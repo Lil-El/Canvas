@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "React";
 import "./App.css"; //  className="toolbar"
 import style from "./style/index.scss";
 import { SYMBOL, MODE } from './canvas/util';
-import { useObjSize, makeLine, makeCircle, makeRect, makePolygon, makeOperateCircle, makeText } from './canvas/Symbol';
+import { makeCurve, makeLine, makeCircle, makeRect, makePolygon, makeOperateCircle, makeText } from './canvas/Symbol';
 import useRange from "./canvas/Range/useRange";
 import { useEditing } from "./canvas/Edit";
 import { useKeydown } from "./canvas/Keydown";
@@ -83,6 +83,9 @@ export default function App() {
             case SYMBOL.ITEXT:
                 let p = makeText("水，电费 水电费水电费规划局规划局规划局")
                 canvas.add(p)
+            case SYMBOL.CURVE:
+                let curve = makeCurve([0, 0, 100, 100])
+                canvas.add(curve)
             default:
                 break;
         }
@@ -129,6 +132,7 @@ export default function App() {
                 <button onClick={() => addSymbol(SYMBOL.RECTANGLE)}>Add Rect</button>
                 <button onClick={() => addSymbol(SYMBOL.POLYGON)}>Add Polygon</button>
                 <button onClick={() => addSymbol(SYMBOL.POLYLINE)}>Add Polyline</button>
+                <button onClick={() => addSymbol(SYMBOL.CURVE)}>Add Curve</button>
                 <button onClick={() => addPopup()}>Add Popup</button>
             </div>
             <img src={dataURL} />

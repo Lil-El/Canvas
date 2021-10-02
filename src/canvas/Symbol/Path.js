@@ -3,6 +3,7 @@ export const makePath = (path, options)=>{
         id: new Date(),
         fill: "#ffffff",
         stroke: "black",
+        strokeUniform: true,
         ...options
     })
 }

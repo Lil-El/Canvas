@@ -6,6 +6,7 @@ export const SYMBOL = {
     POLYGON: "polygon",
     POLYLINE: "polyline",
     ITEXT: "i-text",
+    CURVE: "curve",
     NONE: null
 };
 
