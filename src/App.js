@@ -81,21 +81,8 @@ export default function App() {
                 canvas.add(polyline);
                 break;
             case SYMBOL.ITEXT:
-                let p = makeText("")
+                let p = makeText("水，电费 水电费水电费规划局规划局规划局")
                 canvas.add(p)
-                let text = "水，电费 水电费水电费规划局规划局规划局" // 不支持输入空格
-                p.set("text", text)
-                // let next = (i)=>{
-                //     if(i >= text.length) return void p.set("text", text);
-                //     setTimeout(()=>{
-                //         let space = (i-1) < 0 ? "" : " ".repeat(i*4)
-                //         let word = text[i];
-                //         p.set("text", space + word);
-                //         canvas.requestRenderAll()
-                //         next(i+1)
-                //     }, 500)
-                // }
-                // next(0);
             default:
                 break;
         }
