@@ -62,7 +62,8 @@ export const makePopup = (canvas)=>{
                 objectCaching: false,
                 lockRotation: true,
                 radius: target.radius,
-                angleWidth: target.angleWidth
+                angleWidth: target.angleWidth,
+                lockScalingFlip: true,
             }
         )
 

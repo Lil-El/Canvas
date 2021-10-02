@@ -4,6 +4,7 @@ export function makePolygon(points = [], options) {
         fill: "red",
         objectCaching: false,
 		transparentCorners: false,
+        strokeUniform: true,
         ...options,
     });
 }

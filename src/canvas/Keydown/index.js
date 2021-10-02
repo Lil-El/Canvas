@@ -17,7 +17,7 @@ export const useKeydown = (canvas) => {
                 canvas.remove(...selected[0].getObjects());
                 selected[0].destroy();
                 canvas.remove(selected[0]);
-            } else if (selected[0]?.get("type") === SYMBOL.ITEXT && selected[0].get("isEditing")) {
+            } else if (selected[0].get("isEditing")) {
                 return void 0;
             } else {
                 canvas.remove(...selected);

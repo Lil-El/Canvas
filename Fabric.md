@@ -20,6 +20,7 @@
 
 - setCoords(): 更新coord
 - selection: Boolean
+- setControlVisible(): 控制controls的显隐（tl:左上角，mr:右中。。。。）
 
 ### Line
 
@@ -64,7 +65,6 @@
 # TODO: 
 
 - popup 尖角位置配置；popup垂直反转尖角位置问题
-- 文字换行动态展示；文字宽度修改动态修改文字换行
 - 曲线绘制
 
 - React项目搭建

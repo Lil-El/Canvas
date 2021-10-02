@@ -6,6 +6,7 @@ export function makeRect(options){
         fill: "green",
         width: 0,
         height: 0,
+        strokeUniform: true,
         ...options
     })
 }

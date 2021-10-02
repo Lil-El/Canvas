@@ -5,6 +5,7 @@ export function makeLine(points = [], options){
         top: 0,
         stroke: "blue",
         strokeWidth: 3,
+        strokeUniform: true,
         ...options
     })
 }

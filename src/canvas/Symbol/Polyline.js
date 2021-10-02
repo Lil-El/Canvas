@@ -6,6 +6,7 @@ export function makePolyline(points = [], options) {
         strokeWidth: 3,
         objectCaching: false,
 		transparentCorners: false,
+        strokeUniform: true,
         ...options,
     });
 }

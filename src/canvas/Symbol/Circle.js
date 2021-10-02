@@ -5,6 +5,7 @@ export function makeCircle(options){
         top: 0,
         fill: "red",
         radius: 0,
+        strokeUniform: true, // stroke不会因为scale而发生变化
         ...options
     })
 }

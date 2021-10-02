@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "React";
 import "./App.css"; //  className="toolbar"
 import style from "./style/index.scss";
 import { SYMBOL, MODE } from './canvas/util';
-import { useObjSize, makeLine, makeCircle, makeRect, makePolygon, makeOperateCircle } from './canvas/Symbol';
+import { useObjSize, makeLine, makeCircle, makeRect, makePolygon, makeOperateCircle, makeText } from './canvas/Symbol';
 import useRange from "./canvas/Range/useRange";
 import { useEditing } from "./canvas/Edit";
 import { useKeydown } from "./canvas/Keydown";
@@ -81,33 +81,21 @@ export default function App() {
                 canvas.add(polyline);
                 break;
             case SYMBOL.ITEXT:
-                let p = new fabric.IText("", {
-                    stroke: "red",
-                    fill: "blue",
-                    fontSize: 18,
-                    lineHeight: 1,
-                    fontWeight: "bold",
-                    hasControls: false,
-                    objectCaching: false
-                })
+                let p = makeText("")
                 canvas.add(p)
-                let text = "水，电费水电费水电费规划局规划局规划局" // 不支持输入空格
-                let next = (i)=>{
-                    if(i >= text.length) return void p.set("text", text);
-                    setTimeout(()=>{
-                        let space = (i-1) < 0 ? "" : " ".repeat(i*4)
-                        let word = text[i];
-                        p.set("text", space + word);
-                        canvas.requestRenderAll()
-                        // p.animate('opacity', '1', {
-                        //     from: "0",
-                        //     duration: 500,
-                        //     onChange: canvas.requestRenderAll.bind(canvas),
-                        // });
-                        next(i+1)
-                    }, 500)
-                }
-                next(0);
+                let text = "水，电费 水电费水电费规划局规划局规划局" // 不支持输入空格
+                p.set("text", text)
+                // let next = (i)=>{
+                //     if(i >= text.length) return void p.set("text", text);
+                //     setTimeout(()=>{
+                //         let space = (i-1) < 0 ? "" : " ".repeat(i*4)
+                //         let word = text[i];
+                //         p.set("text", space + word);
+                //         canvas.requestRenderAll()
+                //         next(i+1)
+                //     }, 500)
+                // }
+                // next(0);
             default:
                 break;
         }
