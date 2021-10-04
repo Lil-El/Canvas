@@ -83,9 +83,11 @@ export default function App() {
             case SYMBOL.ITEXT:
                 let p = makeText("水，电费 水电费水电费规划局规划局规划局")
                 canvas.add(p)
+                break;
             case SYMBOL.CURVE:
-                let curve = makeCurve([0, 0, 100, 100])
+                let curve = makeCurve([100, 100, 200, 200, 300, 100], canvas)
                 canvas.add(curve)
+                break;
             default:
                 break;
         }
@@ -118,6 +120,7 @@ export default function App() {
     const toTop = ()=>{
         current.bringToFront();
     }
+    
     useEffect(()=>{
         let _canvas = new fabric.Canvas("canvas");
         _canvas.set("$mode", MODE.NONE)

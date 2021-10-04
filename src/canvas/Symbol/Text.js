@@ -1,5 +1,6 @@
 export function makeText(work, options) {
     let text = new fabric.Textbox(work, {
+        id: new Date(),
         stroke: "red",
         fill: "blue",
         width: 100,

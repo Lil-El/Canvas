@@ -5,8 +5,9 @@ export const SYMBOL = {
     RECTANGLE: "rect",
     POLYGON: "polygon",
     POLYLINE: "polyline",
-    ITEXT: "i-text",
+    ITEXT: "textbox",
     CURVE: "curve",
+    PATH: "path",
     NONE: null
 };
 

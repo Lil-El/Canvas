@@ -52,7 +52,6 @@ export function useDrawing(canvas){
             } else if(symbol === SYMBOL.POLYLINE){
                 linesRef.current[linesRef.current.length - 1].set({x2: x, y2: y});
             }
-            console.log(obj);
             updateShape();
         }
     }, [canvas, obj])

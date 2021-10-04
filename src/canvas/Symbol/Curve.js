@@ -1,47 +1,66 @@
 import { makeOperateCircle, makePath } from "."
 
-export const makeCurve = (path, options)=>{
-    let curve = makePath(`M ${path[0]} ${path[1]} L ${path[2]} ${path[3]}`, {
+let onMoving = (e)=>{
+    var p = e.transform.target;
+    if (p.name == "p1" || p.name == "p2") {
+        if (p.name == "p1") {
+          p.curve.path[0][1] = p.left;
+          p.curve.path[0][2] = p.top;
+        }
+        else if (p.name == "p2") {
+          p.curve.path[1][3] = p.left;
+          p.curve.path[1][4] = p.top;
+        }
+    } else if (p.name == "o1") {
+        p.curve.path[1][1] = p.left;
+        p.curve.path[1][2] = p.top;
+    }
+}
+
+export const makeCurve = (path, canvas)=>{
+    let curve = makePath(`M ${path[0]} ${path[1]} Q ${path[2]}, ${path[3]}, ${path[4]}, ${path[5]}`, {
         objectCaching: false,
         hasControls: false,
-        ...options
+        selectable: false,
     })
-    curve.on("selected", (ev)=>{
-        curve.p1 = makeOperateCircle({
-            left: path[0] + curve.left,
-            top: path[1] + curve.top,
-            originX: "center",
-            originY: "center",
-            radius: 6
-        })
-        curve.p2 = makeOperateCircle({
-            left: path[2] + curve.left,
-            top: path[3] + curve.top,
-            originX: "center",
-            originY: "center",
-            radius: 6
-        })
-        curve.o1 = makeOperateCircle({
-            left: ((path[0] + path[2]) / 2) + curve.left,
-            top: ((path[1] + path[3]) / 2) + curve.top,
-            originX: "center",
-            originY: "center",
-            radius: 10
-        })
-        curve.canvas.add(curve.p1, curve.p2, curve.o1)
+    curve.p1 = makeOperateCircle({
+        name: "p1",
+        left: path[0],
+        top: path[1],
+        originX: "center",
+        originY: "center",
+        hasControls: false,
+        hasBorders: false,
+        radius: 6,
+        curve
     })
-    // TODO: 处理曲线修改
-    curve.on("moving", (ev)=>{
-        let {path, left: offsetX, top: offsetY} = ev.transform.target;
-        curve.p1.set({left: path[0][1] + offsetX, top: path[0][2] + offsetY})
-        curve.p2.set({left: path[1][1] + offsetX, top: path[1][2] + offsetY})
-        curve.o1.set({
-            left: (path[0][1] + offsetX + path[1][1] + offsetX) / 2,
-            top: (path[0][2] + offsetY + path[1][2] + offsetY) / 2,
-        })
+    curve.p2 = makeOperateCircle({
+        name: "p2",
+        left: path[4],
+        top: path[5],
+        originX: "center",
+        originY: "center",
+        hasControls: false,
+        hasBorders: false,
+        radius: 6,
+        curve
     })
-    curve.on("deselected", (ev)=>{
-        curve.canvas.remove(curve.p1, curve.p2, curve.o1)
+    curve.o1 = makeOperateCircle({
+        name: "o1",
+        left: path[2],
+        top: path[3],
+        originX: "center",
+        originY: "center",
+        hasControls: false,
+        hasBorders: false,
+        radius: 10,
+        curve
     })
+    canvas.add(curve.p1, curve.p2, curve.o1)
+    
+    curve.p1.on("moving", onMoving)
+    curve.p2.on("moving", onMoving)
+    curve.o1.on("moving", onMoving)
+
     return curve;
 }

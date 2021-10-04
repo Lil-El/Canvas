@@ -4,7 +4,7 @@ export function makePolygon(points = [], options) {
         fill: "red",
         objectCaching: false,
 		transparentCorners: false,
-        strokeUniform: true,
+        // strokeUniform: true, 使用该属性，会使points编辑时造成偏移
         ...options,
     });
 }

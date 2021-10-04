@@ -39,8 +39,10 @@ export const useKeydown = (canvas) => {
             canvas.add(group);
             canvas.setActiveObject(group);
         } else if(ev.ctrlKey && (ev.code === "KeyV")) {
-            ev.preventDefault();
             let curActive = canvas.getActiveObject();
+            // 如果对正在编辑的text，进行ctrl + v；直接退出，不禁止默认事件
+            if(curActive.get("type") === SYMBOL.ITEXT && curActive.get("isEditing")) return void 0;
+            ev.preventDefault();
             if(curActive.get("id")) { // 只能复制单个object
                 curActive.clone((cloned)=> {
                     cloned.left += 10;
